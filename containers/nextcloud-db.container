@@ -1,0 +1,16 @@
+[Container]
+Image=docker.io/library/postgres:15
+ContainerName=nextcloud-db
+PodmanArgs=--env POSTGRES_ROOT_PASSWORD=${DB_ROOT_PASSWORD} \
+           --env POSTGRES_DB=${DB_NAME} \
+           --env POSTGRES_USER=${DB_USER} \
+           --env POSTGRES_PASSWORD=${DB_PASSWORD} \
+           --env PGDATA=/var/lib/postgresql/data/pgdata \
+           --volume=nc-db:/var/lib/postgresql/data:Z \
+           --memory=4G \
+           --restart=always
+Network=shared-network
+Label=io.containers.autoupdate=registry
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,25 @@
+ARG NEXTCLOUD_TAG=31
+FROM nextcloud:${NEXTCLOUD_TAG}
+
+RUN set -ex; \
+    \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ffmpeg \
+        ghostscript \
+        procps \
+    ; \
+    rm -rf /var/lib/apt/lists/*
+
+ENV NEXTCLOUD_UPDATE=1
+
+COPY context/scripts/configure.sh /configure.sh
+COPY context/scripts/notify_push.sh /notify_push.sh
+COPY context/scripts/previewgenerator.sh /previewgenerator.sh
+COPY context/configs/prev.config.php /usr/src/nextcloud/config/
+COPY context/configs/phone.config.php /usr/src/nextcloud/config/
+COPY context/configs/log.config.php /usr/src/nextcloud/config/
+COPY context/configs/php-config.ini /usr/local/etc/php/conf.d/99-nextcloud.ini
+
+ENTRYPOINT ["/configure.sh"]
+CMD /entrypoint.sh php-fpm

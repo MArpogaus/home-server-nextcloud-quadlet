@@ -1,0 +1,9 @@
+[Container]
+Image=docker.io/library/redis:7
+ContainerName=nextcloud-redis
+PodmanArgs=--restart=always
+Network=shared-network
+Label=io.containers.autoupdate=registry
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,4 @@
+[Network]
+Name=shared-network
+Driver=bridge
+Subnet=10.89.0.0/24
