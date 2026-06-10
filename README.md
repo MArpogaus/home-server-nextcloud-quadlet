@@ -2,104 +2,116 @@
 
 Nextcloud 31 deployment via Podman Quadlet with PostgreSQL, Redis, and custom PHP-FPM optimization.
 
-## Architecture
+## Structure
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  Nextcloud Service (Quadlet)                        │
-│                                                     │
-│  nextcloud-db     ─ PostgreSQL 15 (:Z volume)       │
-│  nextcloud-redis  ─ Redis 7                         │
-│  nextcloud-app    ─ Nextcloud 31 (custom image)     │
-│  nextcloud-push   ─ notify_push                     │
-│  nextcloud-cron   ─ cron.php scheduler              │
-│  nextcloud-preview-generator ─ preview generation   │
-│  nextcloud-web    ─ Nginx reverse proxy             │
-│                                                     │
-│  Network: shared-network (bridge 10.89.0.0/24)      │
-│  (shared with Bunkerweb via container-to-container)  │
-└─────────────────────────────────────────────────────┘
+service-nextcloud/
+├── containers/
+│   ├── Containerfile              # Build definition
+│   └── context/
+│       ├── configs/
+│       │   ├── log.config.php
+│       │   ├── phone.config.php
+│       │   ├── php-config.ini
+│       │   └── prev.config.php
+│       └── scripts/
+│           ├── configure.sh
+│           ├── cron-wrapper.sh
+│           ├── notify_push.sh
+│           └── previewgenerator.sh
+├── quadlets/
+│   ├── nextcloud-{app,cron,db,redis,web,push,preview-generator}.container
+│   ├── volumes/
+│   │   ├── nc-app-{apps,config,html,logs}.volume
+│   │   ├── nc-db.volume
+│   │   ├── nc-web-cache.volume
+│   │   └── nextcloud-data.volume
+│   └── networks/
+│       └── shared-network.network
+└── ansible-role/
+    └── nextcloud_service/
+        └── tasks/
+            └── main.yml
 ```
 
-## Quick Start
+## Container Build
 
-1. Copy `.env.example` to `.env` and fill in secrets:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Deploy Quadlet files to systemd user directory:
-   ```bash
-   cp containers/* ~/.config/systemd/user/
-   cp volumes/* ~/.config/systemd/user/
-   cp networks/*.network ~/.config/systemd/user/
-   ```
-
-3. Reload and enable:
-   ```bash
-   systemctl --user daemon-reload
-   systemctl --user enable --now nextcloud-db nextcloud-redis nextcloud-app nextcloud-cron nextcloud-push nextcloud-preview-generator nextcloud-web
-   ```
-
-4. Verify:
-   ```bash
-   podman ps
-   systemctl --user list-units --type=service | grep nextcloud
-   ```
-
-## Image Building
-
-Build and push the custom Nextcloud image via GitHub Actions:
+Build the Nextcloud container image:
 
 ```bash
-# Push to trigger the build workflow
-git push origin main
+cd containers
+podman build -t ghcr.io/your-org/nextcloud:latest .
+podman push ghcr.io/your-org/nextcloud:latest
 ```
 
-The image will be published to:
+## Quadlet Services
+
+Quadlet files define user-level systemd services:
+
+- `nextcloud-db.container` - PostgreSQL 15 database
+- `nextcloud-redis.container` - Redis cache
+- `nextcloud-app.container` - Nextcloud PHP-FPM application
+- `nextcloud-web.container` - Nginx reverse proxy
+- `nextcloud-cron.container` - Cron job scheduler
+- `nextcloud-push.container` - notify_push service
+- `nextcloud-preview-generator.container` - Preview generation
+
+### Volume Definitions
+
+Volumes are defined as Quadlet `.volume` files for persistent storage with proper SELinux labeling.
+
+### Network
+
+`shared-network.network` - Bridge network (10.89.0.0/24) shared with Bunkerweb proxy.
+
+## Ansible Deployment
+
+Use the included Ansible role to deploy Quadlet services:
+
+```yaml
+- hosts: all
+  roles:
+    - role: nextcloud_service
+      nextcloud_service_user: nextcloud
+      nextcloud_service_home: /var/services/nextcloud
 ```
-ghcr.io/MArpogaus/service-nextcloud/my-nextcloud:latest
+
+See `ansible-role/README.md` for details.
+
+## Configuration
+
+All Nextcloud configuration files are included in the container context:
+
+- `php-config.ini` - PHP-FPM settings
+- `prev.config.php` - Preview generator config
+- `phone.config.php` - Phone integration config
+- `log.config.php` - Logging configuration
+- `nginx.conf` - Nginx reverse proxy config (deployed by Ansible)
+
+## Network Architecture
+
+```
++------------------+     +------------------+     +------------------+
+|   Bunkerweb      | --> |  nextcloud-web   | --> |  nextcloud-app   |
+|  (proxy:443)     |     |   (nginx:80)     |     |   (php-fpm)      |
++------------------+     +------------------+     +------------------+
+                                                        |
+                                          +-------------+-------------+
+                                          |             |             |
+                                    +-----v-----+  +----v----+  +-----v-----+
+                                    | nextcloud |  |nextcloud|  |nextcloud  |
+                                    |    db     |  | redis   |  |   cron    |
+                                    +-----------+  +---------+  +-----------+
 ```
 
-### Local Build (for testing)
+All containers communicate via `shared-network` bridge.
 
-```bash
-podman build -t my-nextcloud:latest -f Containerfile .
-```
+## Requirements
 
-## Volume Labels
+- Podman 4.0+ (Quadlet support)
+- systemd user instances
+- Btrfs filesystem (recommended for snapshots)
 
-| Volume | Purpose | SELinux |
-|---|---|---|
-| `nc-db` | PostgreSQL data | `:Z` (private) |
-| `nc-app-html` | Nextcloud files (shared) | `:z` (shared) |
-| `nc-app-apps` | Custom apps | `:z` (shared) |
-| `nc-app-config` | Nextcloud config | `:z` (shared) |
-| `nc-app-logs` | Log files | `:z` (shared) |
-| `nc-web-cache` | Nginx cache | `:ro,z` |
-| `nextcloud-data` | User data | `:z` (shared) |
+## License
 
-## Environment Variables
-
-| Variable | Description | Default |
-|---|---|---|
-| `DB_ROOT_PASSWORD` | PostgreSQL superuser password | — |
-| `DB_NAME` | Database name | `nextcloud` |
-| `DB_USER` | Database user | `nextcloud` |
-| `DB_PASSWORD` | Database user password | — |
-| `NEXTCLOUD_TRUSTED_DOMAINS` | Trusted domain(s) | — |
-| `NEXTCLOUD_URL` | Public URL | — |
-| `NEXTCLOUD_ADMIN_USER` | Admin username (first run) | — |
-| `NEXTCLOUD_ADMIN_PASSWORD` | Admin password (first run) | — |
-| `PHP_MAX_REQUESTS` | PHP-FPM max requests per child | `50` |
-
-## Reverse Proxy
-
-Bunkerweb proxies to `http://nextcloud-web:80` via shared bridge network `shared-network`.
-
-## SELinux
-
-All volumes use proper SELinux labels:
-- Database volumes: `:Z` (private relabel)
-- Shared app volumes: `:z` (shared relabel)
-- Read-only mounts: `:ro,z`
+MIT - See LICENSE file
