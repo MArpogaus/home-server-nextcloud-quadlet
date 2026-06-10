@@ -1,8 +1,7 @@
 [Container]
-Image=ghcr.io/MArpogaus/service-nextcloud/my-nextcloud:latest
+Image=docker.io/library/nextcloud:31-fpm
 ContainerName=nextcloud-cron
-PodmanArgs=--env PHP_MAX_REQUESTS=50 \
-           --memory=1G \
+PodmanArgs=--memory=1G \
            --restart=always
 Volume=nc-app-html:/var/www/html:z
 Volume=nc-app-apps:/var/www/html/custom_apps:z
@@ -10,8 +9,7 @@ Volume=nc-app-config:/var/www/html/config:z
 Volume=nc-app-logs:/var/log/nextcloud:z
 Volume=nextcloud-data:/var/www/html/data:z
 Network=shared-network
-Entrypoint=/cron-wrapper.sh
-Label=io.containers.autoupdate=local
+Command=/cron.sh
 
 [Install]
 WantedBy=default.target

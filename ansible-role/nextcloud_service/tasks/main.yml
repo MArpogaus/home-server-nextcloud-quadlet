@@ -1,31 +1,36 @@
 ---
-# Nextcloud Service Deployment Role
-# Deploys Quadlet services for Nextcloud
-# No specific configuration - uses files from this repository
-
 - name: Ensure Nextcloud user home directory exists
   ansible.builtin.file:
-    path: "{{ nextcloud_service_home | default('/var/services/nextcloud') }}/.config/systemd/user"
+    path: "{{ nextcloud_service_home }}/.config/containers/systemd/configs"
     state: directory
-    owner: "{{ nextcloud_service_user | default('nextcloud') }}"
+    owner: "{{ nextcloud_service_user }}"
     mode: "0755"
 
-- name: Deploy Nextcloud Quadlet container files
+- name: Deploy Nextcloud Quadlet files (container, volume, network)
   ansible.builtin.copy:
-    src: "../quadlets/"
-    dest: "{{ nextcloud_service_home | default('/var/services/nextcloud') }}/.config/systemd/user/"
-    owner: "{{ nextcloud_service_user | default('nextcloud') }}"
+    src: "{{ nextcloud_role_dir }}/../../quadlets/"
+    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/"
+    owner: "{{ nextcloud_service_user }}"
     mode: "0644"
     directory_mode: "0755"
 
-- name: Deploy Nextcloud nginx configuration
-  ansible.builtin.copy:
-    src: "../containers/context/configs/nginx.conf"
-    dest: "{{ nextcloud_service_home | default('/var/services/nextcloud') }}/.config/systemd/user/configs/nginx.conf"
-    owner: "{{ nextcloud_service_user | default('nextcloud') }}"
-    mode: "0644"
-  when: nextcloud_deploy_nginx_config | default(true)
+- name: Template Nextcloud environment file (secrets)
+  ansible.builtin.template:
+    src: nextcloud.env.j2
+    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/nextcloud.env"
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0600"
 
-- name: Notify to reload systemd user daemon
-  ansible.builtin.debug:
-    msg: "Nextcloud Quadlet services deployed. Run 'run0 systemctl --user daemon-reload --machine={{ nextcloud_service_user | default('nextcloud') }}@' to activate."
+- name: Template nginx configuration
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/nginx.conf"
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0644"
+
+- name: Reload systemd user daemon for Nextcloud
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: user
+  become: yes
+  become_user: "{{ nextcloud_service_user }}"

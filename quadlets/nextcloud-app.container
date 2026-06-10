@@ -1,20 +1,7 @@
 [Container]
-Image=ghcr.io/MArpogaus/service-nextcloud/my-nextcloud:latest
+Image=docker.io/library/nextcloud:31-fpm
 ContainerName=nextcloud-app
-PodmanArgs=--env PHP_MAX_REQUESTS=${PHP_MAX_REQUESTS:-50} \
-           --env PHP_MAX_EXECUTION_TIME=3600 \
-           --env PHP_MAX_FILE_UPLOADS=100 \
-           --env PHP_UPLOAD_LIMIT=15G \
-           --env PHP_MEMORY_LIMIT=6G \
-           --env REDIS_HOST=127.0.0.1 \
-           --env POSTGRES_DB=${DB_NAME} \
-           --env POSTGRES_USER=${DB_USER} \
-           --env POSTGRES_PASSWORD=${DB_PASSWORD} \
-           --env POSTGRES_HOST=127.0.0.1 \
-           --env NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS} \
-           --env TRUSTED_PROXIES="127.0.0.1 10.0.0.0/8" \
-           --env NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER} \
-           --env NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD} \
+PodmanArgs=--env-file=./configs/nextcloud.env \
            --memory=6G \
            --mount type=tmpfs,destination=/tmp:exec \
            --restart=always
@@ -24,7 +11,6 @@ Volume=nc-app-config:/var/www/html/config:z
 Volume=nc-app-logs:/var/log/nextcloud:z
 Volume=nextcloud-data:/var/www/html/data:z
 Network=shared-network
-Label=io.containers.autoupdate=local
 
 [Install]
 WantedBy=default.target

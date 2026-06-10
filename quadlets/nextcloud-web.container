@@ -3,13 +3,11 @@ Image=docker.io/library/nginx:1.25
 ContainerName=nextcloud-web
 PodmanArgs=--volume=nc-app-html:/var/www/html:ro,z \
            --volume=nc-app-apps:/var/www/html/custom_apps:ro,z \
-           --volume=nc-web-cache:/var/www/cache:ro,z \
+           --volume=nc-web-cache:/var/www/cache:z \
            --volume=nc-app-logs:/var/log/nextcloud:ro,z \
            --volume=./configs/nginx.conf:/etc/nginx/nginx.conf:ro,Z \
-           # No host port needed — Bunkerweb uses shared network: http://nextcloud-web:80
            --restart=always
 Network=shared-network
-Label=io.containers.autoupdate=registry
 
 [Install]
 WantedBy=default.target

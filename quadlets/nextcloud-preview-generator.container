@@ -1,13 +1,7 @@
 [Container]
-Image=ghcr.io/MArpogaus/service-nextcloud/my-nextcloud:latest
+Image=docker.io/library/nextcloud:31-fpm
 ContainerName=nextcloud-preview-generator
-PodmanArgs=--env PHP_MAX_REQUESTS=50 \
-           --env PHP_MAX_EXECUTION_TIME=3600 \
-           --volume=nc-app-html:/var/www/html:z \
-           --volume=nc-app-apps:/var/www/html/custom_apps:z \
-           --volume=nc-app-config:/var/www/html/config:z \
-           --volume=nc-app-logs:/var/log/nextcloud:z \
-           --volume=nextcloud-data:/var/www/html/data:z \
+PodmanArgs=--env-file=./configs/nextcloud.env \
            --memory=2G \
            --cpus=1 \
            --restart=always
@@ -18,7 +12,6 @@ Volume=nc-app-logs:/var/log/nextcloud:z
 Volume=nextcloud-data:/var/www/html/data:z
 Network=shared-network
 Entrypoint=/previewgenerator.sh
-Label=io.containers.autoupdate=local
 
 [Install]
 WantedBy=default.target
