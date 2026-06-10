@@ -17,9 +17,9 @@ jobs:
       id-token: write
     uses: MArpogaus/image-builder-action/.github/workflows/build-and-publish.yml@main
     with:
-      image-name: my-nextcloud
-      containerfile: ./Containerfile
-      context: .
+      image-name: nextcloud
+      containerfile: ./containers/Containerfile
+      context: ./containers
       platform: linux/amd64
       build-args: |
         NEXTCLOUD_TAG=31
