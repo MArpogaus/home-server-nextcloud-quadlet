@@ -1,0 +1,42 @@
+---
+# Nextcloud Service Deployment Role
+# Deploys Quadlet services for Nextcloud
+# No specific configuration - uses files from this repository
+
+- name: Ensure Nextcloud user home directory exists
+  ansible.builtin.file:
+    path: "{{ nextcloud_service_home }}/.config/systemd/user"
+    state: directory
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0755"
+  vars:
+    nextcloud_service_user: "{{ nextcloud_service_user | default('nextcloud') }}"
+    nextcloud_service_home: "{{ nextcloud_service_home | default('/var/services/nextcloud') }}"
+
+- name: Deploy Nextcloud Quadlet container files
+  ansible.builtin.copy:
+    src: "../quadlets/"
+    dest: "{{ nextcloud_service_home }}/.config/systemd/user/"
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0644"
+    directory_mode: "0755"
+  vars:
+    nextcloud_service_user: "{{ nextcloud_service_user | default('nextcloud') }}"
+    nextcloud_service_home: "{{ nextcloud_service_home | default('/var/services/nextcloud') }}"
+
+- name: Deploy Nextcloud nginx configuration
+  ansible.builtin.copy:
+    src: "../containers/context/configs/nginx.conf"
+    dest: "{{ nextcloud_service_home }}/.config/systemd/user/configs/nginx.conf"
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0644"
+  vars:
+    nextcloud_service_user: "{{ nextcloud_service_user | default('nextcloud') }}"
+    nextcloud_service_home: "{{ nextcloud_service_home | default('/var/services/nextcloud') }}"
+  when: nextcloud_deploy_nginx_config | default(true)
+
+- name: Notify to reload systemd user daemon
+  ansible.builtin.debug:
+    msg: "Nextcloud Quadlet services deployed. Run 'run0 systemctl --user daemon-reload --machine={{ nextcloud_service_user }}@' to activate."
+  vars:
+    nextcloud_service_user: "{{ nextcloud_service_user | default('nextcloud') }}"
