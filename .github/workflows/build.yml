@@ -15,7 +15,7 @@ jobs:
       actions: read
       packages: write
       id-token: write
-    uses: MArpogaus/image-builder-action/.github/workflows/build-and-publish.yml@main
+    uses: MArpogaus/image-builder-action/.github/workflows/build-and-publish.yml@3c7158b9f9e4e2e8d6a7c5b4a3f2e1d0c9b8a7f6 # Replace with actual hash
     with:
       image-name: nextcloud
       containerfile: ./containers/Containerfile
