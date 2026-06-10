@@ -8,7 +8,7 @@
 
 - name: Deploy Nextcloud Quadlet files (container, volume, network)
   ansible.builtin.copy:
-    src: "{{ nextcloud_role_dir }}/../../quadlets/"
+    src: "{{ nextcloud_service_role_dir }}/../../quadlets/"
     dest: "{{ nextcloud_service_home }}/.config/containers/systemd/"
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
