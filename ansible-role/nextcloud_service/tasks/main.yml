@@ -47,16 +47,16 @@
   ansible.builtin.systemd:
     daemon_reload: true
     scope: user
-  become: yes
+  become: true
   become_user: "{{ nextcloud_service_user }}"
 
-- name: Enable and start Nextcloud Quadlet services
+- name: Enable and start core Nextcloud Quadlet services
   ansible.builtin.systemd:
     name: "{{ item }}"
     enabled: true
     state: started
     scope: user
-  become: yes
+  become: true
   become_user: "{{ nextcloud_service_user }}"
   loop:
     - nextcloud-db
@@ -64,5 +64,16 @@
     - nextcloud-app
     - nextcloud-web
     - nextcloud-cron
+
+- name: Enable and start optional Nextcloud services (require custom images)
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    scope: user
+  become: true
+  become_user: "{{ nextcloud_service_user }}"
+  loop:
     - nextcloud-push
     - nextcloud-preview-generator
+  failed_when: false
