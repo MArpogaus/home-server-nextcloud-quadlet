@@ -54,6 +54,17 @@
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
 
+- name: Pre-set data directory ownership for rootless Podman (matches old compose pattern)
+  ansible.builtin.command:
+    cmd: "podman unshare chown 33:33 {{ nextcloud_service_home }}/data/{{ item }}"
+  become: true
+  become_user: "{{ nextcloud_service_user }}"
+  loop:
+    - data
+    - config
+  changed_when: true
+  failed_when: false
+
 - name: Reload systemd user daemon for Nextcloud
   ansible.builtin.systemd:
     daemon_reload: true
