@@ -6,16 +6,17 @@
     owner: "{{ nextcloud_service_user }}"
     mode: "0755"
 
-- name: Create data directories for Btrfs snapshot compatibility
+- name: Create service directories for Btrfs snapshot compatibility and scripts
   ansible.builtin.file:
-    path: "{{ nextcloud_service_home }}/data/{{ item }}"
+    path: "{{ nextcloud_service_home }}/{{ item }}"
     state: directory
     owner: "{{ nextcloud_service_user }}"
     mode: "0755"
   loop:
-    - db_data
-    - data
-    - config
+    - data/db_data
+    - data/data
+    - data/config
+    - bin
 
 - name: Deploy Nextcloud Quadlet template files (containers)
   ansible.builtin.template:
@@ -39,7 +40,8 @@
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
   loop: >-
-    {{ query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.pod')
+    {{ query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.container')
+     + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.pod')
      + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.volume')
      + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.network') }}
 
@@ -54,6 +56,13 @@
   ansible.builtin.template:
     src: nginx.conf.j2
     dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/nginx.conf"
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0644"
+
+- name: Deploy promtail config for nextcloud user
+  ansible.builtin.copy:
+    src: quadlets/configs/promtail-nc.yaml
+    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/promtail-nc.yaml"
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
 
@@ -75,10 +84,9 @@
   become: true
   become_user: "{{ nextcloud_service_user }}"
 
-- name: Enable and start core Nextcloud Quadlet services
+- name: Start core Nextcloud Quadlet services
   ansible.builtin.systemd:
     name: "{{ item }}"
-    enabled: true
     state: started
     scope: user
   become: true
@@ -90,10 +98,9 @@
     - nextcloud-web
     - nextcloud-cron
 
-- name: Enable and start optional Nextcloud services (require custom images)
+- name: Start optional Nextcloud services (require custom images)
   ansible.builtin.systemd:
     name: "{{ item }}"
-    enabled: true
     state: started
     scope: user
   become: true
@@ -101,4 +108,5 @@
   loop:
     - nextcloud-push
     - nextcloud-preview-generator
+    - promtail-nc
   failed_when: false
