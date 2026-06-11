@@ -15,5 +15,9 @@ AutoUpdate={{ nextcloud_service_auto_update }}
 Requires=nextcloud-db.service nextcloud-redis.service
 After=nextcloud-db.service nextcloud-redis.service
 
+[Service]
+Restart=on-failure
+RestartSec=10s
+
 [Install]
 WantedBy=default.target

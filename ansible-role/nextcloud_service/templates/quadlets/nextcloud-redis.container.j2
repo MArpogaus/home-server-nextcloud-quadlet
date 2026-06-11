@@ -4,5 +4,9 @@ ContainerName=nextcloud-redis
 Pod=nc.pod
 AutoUpdate={{ nextcloud_service_auto_update }}
 
+[Service]
+Restart=on-failure
+RestartSec=10s
+
 [Install]
 WantedBy=default.target

@@ -14,5 +14,9 @@ AutoUpdate={{ nextcloud_service_auto_update }}
 [Unit]
 After=nextcloud-app.service
 
+[Service]
+Restart=on-failure
+RestartSec=10s
+
 [Install]
 WantedBy=default.target
