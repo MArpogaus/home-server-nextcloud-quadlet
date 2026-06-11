@@ -2,8 +2,7 @@
 Image=docker.io/library/nextcloud:31-fpm
 ContainerName=nextcloud-push
 PodmanArgs=--env-file=./configs/nextcloud.env \
-           --memory=512M \
-           --restart=always
+           --memory=512M
 Volume=nc-app-html:/var/www/html:z
 Volume=nc-app-apps:/var/www/html/custom_apps:z
 Volume=nc-app-config:/var/www/html/config:z

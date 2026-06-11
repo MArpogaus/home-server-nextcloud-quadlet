@@ -2,6 +2,7 @@
 Image=docker.io/library/redis:7
 ContainerName=nextcloud-redis
 Network=shared-network
+AutoUpdate={{ nextcloud_service_auto_update }}
 
 [Install]
 WantedBy=default.target

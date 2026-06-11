@@ -3,14 +3,17 @@ Image=docker.io/library/nextcloud:31-fpm
 ContainerName=nextcloud-app
 PodmanArgs=--env-file=./configs/nextcloud.env \
            --memory=6G \
-           --mount type=tmpfs,destination=/tmp:exec \
-           --restart=always
+           --mount type=tmpfs,destination=/tmp:exec
 Volume=nc-app-html:/var/www/html:z
 Volume=nc-app-apps:/var/www/html/custom_apps:z
 Volume=nc-app-config:/var/www/html/config:z
 Volume=nc-app-logs:/var/log/nextcloud:z
 Volume=nextcloud-data:/var/www/html/data:z
 Network=shared-network
+
+[Unit]
+Requires=nextcloud-db.service nextcloud-redis.service
+After=nextcloud-db.service nextcloud-redis.service
 
 [Install]
 WantedBy=default.target

@@ -1,15 +1,14 @@
 [Container]
 Image=docker.io/library/nextcloud:31-fpm
 ContainerName=nextcloud-cron
-PodmanArgs=--memory=1G \
-           --restart=always
+PodmanArgs=--memory=1G
 Volume=nc-app-html:/var/www/html:z
 Volume=nc-app-apps:/var/www/html/custom_apps:z
 Volume=nc-app-config:/var/www/html/config:z
 Volume=nc-app-logs:/var/log/nextcloud:z
 Volume=nextcloud-data:/var/www/html/data:z
 Network=shared-network
-Command=/cron.sh
+Exec=/cron.sh
 
 [Install]
 WantedBy=default.target

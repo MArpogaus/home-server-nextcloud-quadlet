@@ -1,16 +1,18 @@
 [Container]
 Image=docker.io/library/nextcloud:31-fpm
-ContainerName=nextcloud-preview-generator
-PodmanArgs=--env-file=./configs/nextcloud.env \
-           --memory=2G \
-           --cpus=1
+ContainerName=nextcloud-cron
+PodmanArgs={{ nextcloud_service_cron_extra_args }}
 Volume=nc-app-html:/var/www/html:z
 Volume=nc-app-apps:/var/www/html/custom_apps:z
 Volume=nc-app-config:/var/www/html/config:z
 Volume=nc-app-logs:/var/log/nextcloud:z
 Volume=nextcloud-data:/var/www/html/data:z
 Network=shared-network
-Entrypoint=/previewgenerator.sh
+Exec=/cron.sh
+AutoUpdate={{ nextcloud_service_auto_update }}
+
+[Unit]
+After=nextcloud-app.service
 
 [Install]
 WantedBy=default.target

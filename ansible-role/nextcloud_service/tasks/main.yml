@@ -6,13 +6,28 @@
     owner: "{{ nextcloud_service_user }}"
     mode: "0755"
 
-- name: Deploy Nextcloud Quadlet files (container, volume, network)
+- name: Deploy Nextcloud Quadlet template files (containers)
+  ansible.builtin.template:
+    src: "quadlets/{{ item }}.container.j2"
+    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/{{ item }}.container"
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0644"
+  loop:
+    - nextcloud-db
+    - nextcloud-redis
+    - nextcloud-app
+    - nextcloud-web
+    - nextcloud-cron
+    - nextcloud-push
+    - nextcloud-preview-generator
+
+- name: Deploy Nextcloud Quadlet static files (volume, network)
   ansible.builtin.copy:
-    src: "{{ nextcloud_service_role_dir }}/../../quadlets/"
+    src: "{{ item }}"
     dest: "{{ nextcloud_service_home }}/.config/containers/systemd/"
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
-    directory_mode: "0755"
+  loop: "{{ query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.volume') + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.network') }}"
 
 - name: Template Nextcloud environment file (secrets)
   ansible.builtin.template:
@@ -34,3 +49,20 @@
     scope: user
   become: yes
   become_user: "{{ nextcloud_service_user }}"
+
+- name: Enable and start Nextcloud Quadlet services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    scope: user
+  become: yes
+  become_user: "{{ nextcloud_service_user }}"
+  loop:
+    - nextcloud-db
+    - nextcloud-redis
+    - nextcloud-app
+    - nextcloud-web
+    - nextcloud-cron
+    - nextcloud-push
+    - nextcloud-preview-generator

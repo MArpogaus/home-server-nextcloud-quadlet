@@ -3,8 +3,7 @@ Image=docker.io/library/postgres:15
 ContainerName=nextcloud-db
 PodmanArgs=--env-file=./configs/nextcloud.env \
            --volume=nc-db:/var/lib/postgresql/data:Z \
-           --memory=4G \
-           --restart=always
+           --memory=4G
 Network=shared-network
 
 [Install]
