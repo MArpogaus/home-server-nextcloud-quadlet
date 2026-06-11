@@ -48,22 +48,22 @@ jobs:
       packages: write
       id-token: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10   # v6.0.3
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10   # v6.0.3
 
-    - name: Build and Push Image
-      id: build
-      uses: MArpogaus/image-builder-action@376511ec51c9d0d2418ecb5505eeb87f09353df6 # v1.4.0
-      with:
-        image-name: ${{ inputs.image-name }}
-        containerfile: ${{ inputs.containerfile }}
-        context: ${{ inputs.context }}
-        platform: ${{ inputs.platform }}
-        slsa-verify-source: ${{ inputs.slsa-verify-source }}
-        cosign-public-key: ${{ inputs.cosign-public-key }}
-        build-args: ${{ inputs.build-args }}
-        free-disk-space: ${{ inputs.free-disk-space }}
-        signing-secret: ${{ secrets.SIGNING_SECRET }}
+      - name: Build and Push Image
+        id: build
+        uses: MArpogaus/image-builder-action@376511ec51c9d0d2418ecb5505eeb87f09353df6 # v1.4.0
+        with:
+          image-name: ${{ inputs.image-name }}
+          containerfile: ${{ inputs.containerfile }}
+          context: ${{ inputs.context }}
+          platform: ${{ inputs.platform }}
+          slsa-verify-source: ${{ inputs.slsa-verify-source }}
+          cosign-public-key: ${{ inputs.cosign-public-key }}
+          build-args: ${{ inputs.build-args }}
+          free-disk-space: ${{ inputs.free-disk-space }}
+          signing-secret: ${{ secrets.SIGNING_SECRET }}
 
   provenance:
     needs: [build_and_push_image]
