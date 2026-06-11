@@ -61,14 +61,14 @@
 
 - name: Deploy promtail config for nextcloud user
   ansible.builtin.copy:
-    src: quadlets/configs/promtail-nc.yaml
+    src: "{{ nextcloud_service_role_dir }}/../../quadlets/configs/promtail-nc.yaml"
     dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/promtail-nc.yaml"
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
 
 - name: Deploy pre-snapshot pg_dumpall script
   ansible.builtin.copy:
-    src: files/pre-snapshot-pg-dump.sh
+    src: pre-snapshot-pg-dump.sh
     dest: "{{ nextcloud_service_home }}/bin/pre-snapshot-pg-dump.sh"
     owner: "{{ nextcloud_service_user }}"
     mode: "0755"
