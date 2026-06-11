@@ -1,7 +1,0 @@
-[Container]
-Image=docker.io/library/redis:7
-ContainerName=nextcloud-redis
-Network=shared-network
-
-[Install]
-WantedBy=default.target
