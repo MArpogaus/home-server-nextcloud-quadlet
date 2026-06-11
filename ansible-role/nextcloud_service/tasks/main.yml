@@ -6,6 +6,17 @@
     owner: "{{ nextcloud_service_user }}"
     mode: "0755"
 
+- name: Create data directories for Btrfs snapshot compatibility
+  ansible.builtin.file:
+    path: "{{ nextcloud_service_home }}/data/{{ item }}"
+    state: directory
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0755"
+  loop:
+    - db_data
+    - data
+    - config
+
 - name: Deploy Nextcloud Quadlet template files (containers)
   ansible.builtin.template:
     src: "quadlets/{{ item }}.container.j2"
@@ -27,7 +38,7 @@
     dest: "{{ nextcloud_service_home }}/.config/containers/systemd/"
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
-  loop: "{{ query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.volume') + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.network') }}"
+  loop: "{{ query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.pod') + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.volume') + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.network') }}"
 
 - name: Template Nextcloud environment file (secrets)
   ansible.builtin.template:

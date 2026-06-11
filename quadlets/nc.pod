@@ -1,0 +1,4 @@
+[Pod]
+PodName=nc
+Network=shared-network
+PublishPort=127.0.0.1:8080:80

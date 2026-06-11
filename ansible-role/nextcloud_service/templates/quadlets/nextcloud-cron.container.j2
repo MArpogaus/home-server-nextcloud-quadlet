@@ -4,10 +4,10 @@ ContainerName=nextcloud-cron
 PodmanArgs={{ nextcloud_service_cron_extra_args }}
 Volume=nc-app-html:/var/www/html:z
 Volume=nc-app-apps:/var/www/html/custom_apps:z
-Volume=nc-app-config:/var/www/html/config:z
 Volume=nc-app-logs:/var/log/nextcloud:z
-Volume=nextcloud-data:/var/www/html/data:z
-Network=shared-network
+Volume={{ nextcloud_service_home }}/data/data:/var/www/html/data:z
+Volume={{ nextcloud_service_home }}/data/config:/var/www/html/config:z
+Pod=nc.pod
 Exec=/cron.sh
 AutoUpdate={{ nextcloud_service_auto_update }}
 
