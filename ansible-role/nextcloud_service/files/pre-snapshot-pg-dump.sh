@@ -1,0 +1,25 @@
+#!/bin/bash
+# Pre-snapshot PostgreSQL dump — runs as nextcloud user
+# Dumps all databases to the data subvolume so Btrfs snapshot captures it.
+set -euo pipefail
+
+DUMP_DIR="${HOME}/data/db_dumps"
+TIMESTAMP="$(date +%F-%H%M%S)"
+ENV_FILE="${HOME}/.config/containers/systemd/configs/nextcloud.env"
+
+mkdir -p "$DUMP_DIR"
+
+DB_PASSWORD=$(grep '^POSTGRES_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)
+
+if [ -z "$DB_PASSWORD" ]; then
+  echo "ERROR: POSTGRES_PASSWORD not found in $ENV_FILE" >&2
+  exit 1
+fi
+
+podman exec -e PGPASSWORD="${DB_PASSWORD}" nextcloud-db pg_dumpall -U nextcloud \
+  > "${DUMP_DIR}/dump-${TIMESTAMP}.sql"
+
+echo "Dump saved: ${DUMP_DIR}/dump-${TIMESTAMP}.sql ($(wc -c < "${DUMP_DIR}/dump-${TIMESTAMP}.sql") bytes)"
+
+# Prune dumps older than 30 days
+find "$DUMP_DIR" -name 'dump-*.sql' -mtime +30 -delete

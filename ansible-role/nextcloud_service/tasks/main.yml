@@ -66,6 +66,35 @@
     owner: "{{ nextcloud_service_user }}"
     mode: "0644"
 
+- name: Deploy pre-snapshot pg_dumpall script
+  ansible.builtin.copy:
+    src: files/pre-snapshot-pg-dump.sh
+    dest: "{{ nextcloud_service_home }}/bin/pre-snapshot-pg-dump.sh"
+    owner: "{{ nextcloud_service_user }}"
+    mode: "0755"
+
+- name: Deploy system-level pg_dumpall service unit
+  ansible.builtin.template:
+    src: pg-dumpall.service.j2
+    dest: /etc/systemd/system/pg-dumpall.service
+    owner: root
+    mode: "0644"
+
+- name: Deploy system-level pg_dumpall timer unit
+  ansible.builtin.template:
+    src: pg-dumpall.timer.j2
+    dest: /etc/systemd/system/pg-dumpall.timer
+    owner: root
+    mode: "0644"
+
+- name: Enable and start pg_dumpall timer
+  ansible.builtin.systemd:
+    name: pg-dumpall.timer
+    enabled: true
+    state: started
+    scope: system
+  become: true
+
 - name: Pre-set data directory ownership for rootless Podman (matches old compose pattern)
   ansible.builtin.command:
     cmd: "podman unshare chown 33:33 {{ nextcloud_service_home }}/data/{{ item }}"
