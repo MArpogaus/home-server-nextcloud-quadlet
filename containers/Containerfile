@@ -1,5 +1,5 @@
 ARG NEXTCLOUD_TAG=31
-FROM nextcloud:${NEXTCLOUD_TAG}
+FROM nextcloud:${NEXTCLOUD_TAG}-fpm
 
 RUN set -ex; \
     \
