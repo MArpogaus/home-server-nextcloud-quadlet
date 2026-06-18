@@ -1,12 +1,8 @@
 ---
-- name: Ensure Nextcloud user home directory exists
-  ansible.builtin.file:
-    path: "{{ nextcloud_service_home }}/.config/containers/systemd/configs"
-    state: directory
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0755"
+# Nextcloud service role - data directories and config only
+# Quadlet files are deployed via site.yml using root Podman
 
-- name: Create service directories for Btrfs snapshot compatibility and scripts
+- name: Ensure service data directories for Btrfs snapshots
   ansible.builtin.file:
     path: "{{ nextcloud_service_home }}/{{ item }}"
     state: directory
@@ -17,54 +13,6 @@
     - data/data
     - data/config
     - bin
-
-- name: Deploy Nextcloud Quadlet template files (containers)
-  ansible.builtin.template:
-    src: "quadlets/{{ item }}.container.j2"
-    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/{{ item }}.container"
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0644"
-  loop:
-    - nextcloud-db
-    - nextcloud-redis
-    - nextcloud-app
-    - nextcloud-web
-    - nextcloud-cron
-    - nextcloud-push
-    - nextcloud-preview-generator
-
-- name: Deploy Nextcloud Quadlet static files (volume, network)
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/"
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0644"
-  loop: >-
-    {{ query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.container')
-     + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.pod')
-     + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.volume')
-     + query('fileglob', nextcloud_service_role_dir + '/../../quadlets/*.network') }}
-
-- name: Template Nextcloud environment file (secrets)
-  ansible.builtin.template:
-    src: nextcloud.env.j2
-    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/nextcloud.env"
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0600"
-
-- name: Template nginx configuration
-  ansible.builtin.template:
-    src: nginx.conf.j2
-    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/nginx.conf"
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0644"
-
-- name: Deploy promtail config for nextcloud user
-  ansible.builtin.copy:
-    src: "{{ nextcloud_service_role_dir }}/../../quadlets/configs/promtail-nc.yaml"
-    dest: "{{ nextcloud_service_home }}/.config/containers/systemd/configs/promtail-nc.yaml"
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0644"
 
 - name: Deploy pre-snapshot pg_dumpall script
   ansible.builtin.copy:
@@ -95,47 +43,11 @@
     scope: system
   become: true
 
-- name: Pre-set data directory ownership for rootless Podman (matches old compose pattern)
+- name: Pre-set data directory ownership for root Podman
   ansible.builtin.command:
-    cmd: "podman unshare chown 33:33 {{ nextcloud_service_home }}/data/{{ item }}"
-  become: true
-  become_user: "{{ nextcloud_service_user }}"
+    cmd: "chown -R 33:33 {{ nextcloud_service_home }}/data/{{ item }}"
   loop:
     - data
     - config
   changed_when: true
-  failed_when: false
-
-- name: Reload systemd user daemon for Nextcloud
-  ansible.builtin.systemd:
-    daemon_reload: true
-    scope: user
-  become: true
-  become_user: "{{ nextcloud_service_user }}"
-
-- name: Start core Nextcloud Quadlet services
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    state: started
-    scope: user
-  become: true
-  become_user: "{{ nextcloud_service_user }}"
-  loop:
-    - nextcloud-db
-    - nextcloud-redis
-    - nextcloud-app
-    - nextcloud-web
-    - nextcloud-cron
-
-- name: Start optional Nextcloud services (require custom images)
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    state: started
-    scope: user
-  become: true
-  become_user: "{{ nextcloud_service_user }}"
-  loop:
-    - nextcloud-push
-    - nextcloud-preview-generator
-    - promtail-nc
   failed_when: false
