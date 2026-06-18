@@ -132,3 +132,4 @@ $RECYCLE.BIN/
 *.log
 db/
 data/
+quadlets/nextcloud-*.container
