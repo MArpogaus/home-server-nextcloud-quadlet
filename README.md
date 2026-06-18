@@ -24,16 +24,21 @@ Nextcloud deployment with rootless Podman Quadlet, managed via Ansible.
 service-nextcloud/
   .env.example                       # Environment variable reference
   quadlets/
-    nc-*.volume                      # Quadlet volume definitions
+    *.container.j2                   # Container Quadlet templates (7)
+    *.volume                         # Quadlet volume definitions
     shared-network.network           # Bridge network (10.89.0.0/24)
-    configs/nginx.conf               # Static nginx config
+    configs/
+      nginx.conf.j2                  # Nginx config template
+      promtail-nc.yaml               # Log shipping config
+    nc.pod                           # Pod definition
+    promtail-nc.pod                  # Promtail pod definition
   ansible-role/nextcloud_service/
     defaults/main.yml                # Role defaults (extra_args, auto_update)
     tasks/main.yml                   # Deployment tasks
     templates/
-      quadlets/*.container.j2        # Container Quadlet templates (7)
       nextcloud.env.j2               # Environment file template (secrets)
-      nginx.conf.j2                  # Nginx config template
+      pg-dumpall.service.j2          # DB dump service template
+      pg-dumpall.timer.j2            # DB dump timer template
   containers/                        # Custom image build (optional)
 ```
 
@@ -43,7 +48,7 @@ service-nextcloud/
 |---|---|
 | Environment vars | `nextcloud.env.j2` (templated by Ansible) |
 | Extra args (memory, CPU, tmpfs) | `defaults/main.yml` role variables |
-| Nginx config | `nginx.conf.j2` (templated) or `configs/nginx.conf` (static) |
+| Nginx config | `nginx.conf.j2` (templated) |
 | Auto-update | `nextcloud_service_auto_update` var (default: `registry`) |
 | Quadlet images | `Image=` directive in each `.container.j2` |
 
