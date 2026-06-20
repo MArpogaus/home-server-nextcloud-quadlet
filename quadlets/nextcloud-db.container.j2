@@ -2,7 +2,7 @@
 Image=docker.io/library/postgres:15
 ContainerName=nextcloud-db
 EnvironmentFile=./configs/nextcloud.env
-Volume={{ nextcloud_service_home }}/data/db_data:/var/lib/postgresql/data:Z
+Volume={{ service_home }}/data/db_data:/var/lib/postgresql/data:Z
 PodmanArgs={{ ' ' + nextcloud_service_db_extra_args if nextcloud_service_db_extra_args else '' }}
 Pod=nc.pod
 AutoUpdate={{ nextcloud_service_auto_update }}

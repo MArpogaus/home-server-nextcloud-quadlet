@@ -1,13 +1,13 @@
 ---
-# Nextcloud service role - data directories and config only
-# Quadlet files are deployed via site.yml using root Podman
+# Nextcloud service deployment — fully self-contained
+# Receives: service_name, service_user, service_uid, service_home, service_repo
 
-- name: Ensure service data directories for Btrfs snapshots
+- name: Ensure service data directories
   ansible.builtin.file:
-    path: "{{ nextcloud_service_home }}/{{ item }}"
+    path: "{{ service_home }}/{{ item }}"
     state: directory
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0755"
+    owner: "{{ service_user }}"
+    mode: '0755'
   loop:
     - data/db_data
     - data/data
@@ -17,23 +17,23 @@
 - name: Deploy pre-snapshot pg_dumpall script
   ansible.builtin.copy:
     src: pre-snapshot-pg-dump.sh
-    dest: "{{ nextcloud_service_home }}/bin/pre-snapshot-pg-dump.sh"
-    owner: "{{ nextcloud_service_user }}"
-    mode: "0755"
+    dest: "{{ service_home }}/bin/pre-snapshot-pg-dump.sh"
+    owner: "{{ service_user }}"
+    mode: '0755'
 
-- name: Deploy system-level pg_dumpall service unit
+- name: Template pg_dumpall systemd service
   ansible.builtin.template:
     src: pg-dumpall.service.j2
     dest: /etc/systemd/system/pg-dumpall.service
     owner: root
-    mode: "0644"
+    mode: '0644'
 
-- name: Deploy system-level pg_dumpall timer unit
+- name: Template pg_dumpall systemd timer
   ansible.builtin.template:
     src: pg-dumpall.timer.j2
     dest: /etc/systemd/system/pg-dumpall.timer
     owner: root
-    mode: "0644"
+    mode: '0644'
 
 - name: Enable and start pg_dumpall timer
   ansible.builtin.systemd:
@@ -41,13 +41,74 @@
     enabled: true
     state: started
     scope: system
-  become: true
 
 - name: Pre-set data directory ownership for root Podman
   ansible.builtin.command:
-    cmd: "chown -R 33:33 {{ nextcloud_service_home }}/data/{{ item }}"
+    cmd: "chown -R 33:33 {{ service_home }}/data/{{ item }}"
   loop:
     - data
     - config
   changed_when: true
   failed_when: false
+
+- name: Deploy static Quadlet files
+  ansible.builtin.copy:
+    src: "{{ service_repo }}/quadlets/{{ item }}"
+    dest: "{{ service_home }}/.config/containers/systemd/"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0644'
+  loop:
+    - nc-app-apps.volume
+    - nc-app-config.volume
+    - nc-app-data.volume
+    - nc-app-html.volume
+    - nc-app-logs.volume
+    - nc-db.volume
+    - nc-web-cache.volume
+    - shared-network.network
+    - nc.pod
+    - promtail-nc.container
+    - promtail-nc.pod
+
+- name: Template container Quadlet files
+  ansible.builtin.template:
+    src: "{{ service_repo }}/quadlets/nextcloud-{{ item }}.container.j2"
+    dest: "{{ service_home }}/.config/containers/systemd/nextcloud-{{ item }}.container"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0644'
+  loop:
+    - db
+    - redis
+    - app
+    - web
+    - cron
+    - push
+    - preview-generator
+
+- name: Deploy config files
+  ansible.builtin.copy:
+    src: "{{ service_repo }}/quadlets/configs/{{ item }}"
+    dest: "{{ service_home }}/.config/containers/systemd/configs/{{ item }}"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0644'
+  loop:
+    - promtail-nc.yaml
+
+- name: Template nginx config
+  ansible.builtin.template:
+    src: "{{ service_repo }}/quadlets/configs/nginx.conf.j2"
+    dest: "{{ service_home }}/.config/containers/systemd/configs/nginx.conf"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0644'
+
+- name: Template nextcloud environment file
+  ansible.builtin.template:
+    src: "{{ service_repo }}/ansible-role/nextcloud_service/templates/nextcloud.env.j2"
+    dest: "{{ service_home }}/.config/containers/systemd/configs/nextcloud.env"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0600'
