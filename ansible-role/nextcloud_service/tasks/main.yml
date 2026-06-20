@@ -42,15 +42,6 @@
     state: started
     scope: system
 
-- name: Pre-set data directory ownership for root Podman
-  ansible.builtin.command:
-    cmd: "chown -R 33:33 {{ service_home }}/data/{{ item }}"
-  loop:
-    - data
-    - config
-  changed_when: true
-  failed_when: false
-
 - name: Deploy static Quadlet files
   ansible.builtin.copy:
     src: "{{ service_repo }}/quadlets/{{ item }}"
