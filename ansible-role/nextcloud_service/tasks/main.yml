@@ -87,6 +87,14 @@
     - push
     - preview-generator
 
+- name: Ensure configs directory exists
+  ansible.builtin.file:
+    path: "{{ service_home }}/.config/containers/systemd/configs"
+    state: directory
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0755'
+
 - name: Deploy config files
   ansible.builtin.copy:
     src: "{{ service_repo }}/quadlets/configs/{{ item }}"
