@@ -1,5 +1,5 @@
 [Container]
-Image={{ nextcloud_image | default('docker.io/library/nextcloud:31-fpm') }}
+Image={{ (nextcloud_image | default('docker.io/library/nextcloud:31-fpm')) | lower }}
 ContainerName=nextcloud-preview-generator
 EnvironmentFile=./configs/nextcloud.env
 PodmanArgs={{ nextcloud_service_preview_extra_args }}
