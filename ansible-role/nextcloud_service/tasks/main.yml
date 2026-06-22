@@ -50,13 +50,6 @@
     group: "{{ service_user }}"
     mode: '0644'
   loop:
-    - nc-app-apps.volume
-    - nc-app-config.volume
-    - nc-app-data.volume
-    - nc-app-html.volume
-    - nc-app-logs.volume
-    - nc-db.volume
-    - nc-web-cache.volume
     - shared-network.network
     - nc.pod
     - promtail-nc.container
