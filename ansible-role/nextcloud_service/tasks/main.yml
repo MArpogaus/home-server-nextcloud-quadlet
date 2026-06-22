@@ -105,30 +105,9 @@
     group: "{{ service_user }}"
     mode: '0600'
 
-- name: Pre-create Podman volumes for Nextcloud
-  ansible.builtin.command:
-    cmd: "machinectl shell {{ service_user }}@ /usr/bin/podman volume create --ignore {{ item }}"
-  loop:
-    - nc-app-html
-    - nc-app-apps
-    - nc-app-config
-    - nc-app-data
-    - nc-app-logs
-    - nc-db
-    - nc-web-cache
-
-- name: Pre-seed html volume with Nextcloud source files
-  ansible.builtin.command:
-    cmd: "machinectl shell {{ service_user }}@ /usr/bin/podman run --rm -v nc-app-html:/var/www/html:z --entrypoint /bin/sh {{ nextcloud_image | lower }} -c 'cp -a /usr/src/nextcloud/. /var/www/html/'"
-  failed_when: false
-
-- name: Fix volume ownership to www-data (33) in podman user namespace
+- name: Fix bind-mount ownership to www-data (33) in podman user namespace
   ansible.builtin.shell: |
-    machinectl shell {{ service_user }}@ /usr/bin/bash -c '
-      podman unshare chown -R 33:33 \
-        {{ service_home }}/.local/share/containers/storage/volumes/nc-app-html/_data \
-        {{ service_home }}/.local/share/containers/storage/volumes/nc-app-apps/_data \
-        {{ service_home }}/.local/share/containers/storage/volumes/nc-app-logs/_data \
-        {{ service_home }}/data/data \
-        {{ service_home }}/data/config
-    '
+    machinectl shell {{ service_user }}@ /usr/bin/podman unshare chown -R 33:33 \
+      {{ service_home }}/data/data \
+      {{ service_home }}/data/config
+
