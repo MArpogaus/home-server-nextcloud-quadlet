@@ -20,7 +20,5 @@ RUN chmod +x /configure.sh /notify_push.sh /previewgenerator.sh
 COPY context/configs/prev.config.php /usr/src/nextcloud/config/
 COPY context/configs/phone.config.php /usr/src/nextcloud/config/
 COPY context/configs/log.config.php /usr/src/nextcloud/config/
-COPY context/configs/php-config.ini /usr/local/etc/php/conf.d/99-nextcloud.ini
-
 ENTRYPOINT ["/configure.sh"]
 CMD /entrypoint.sh php-fpm
