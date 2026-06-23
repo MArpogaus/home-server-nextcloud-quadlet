@@ -1,5 +1,5 @@
 [Container]
-Image=docker.io/library/nginx:1.25
+Image={{ nextcloud_nginx_image }}
 ContainerName=nextcloud-web
 PodmanArgs={{ nextcloud_service_web_extra_args }}
 Volume=nc-app-html:/var/www/html:ro,z

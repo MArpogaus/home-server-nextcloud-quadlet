@@ -1,5 +1,5 @@
 [Container]
-Image={{ (nextcloud_image | default('docker.io/library/nextcloud:31-fpm')) | lower }}
+Image={{ nextcloud_app_image }}
 ContainerName=nextcloud-app
 EnvironmentFile=./configs/nextcloud.env
 PodmanArgs={{ nextcloud_service_app_extra_args }}

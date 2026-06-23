@@ -1,5 +1,5 @@
 [Container]
-Image=docker.io/library/redis:7
+Image={{ nextcloud_redis_image }}
 ContainerName=nextcloud-redis
 Pod=nc.pod
 AutoUpdate={{ nextcloud_service_auto_update }}

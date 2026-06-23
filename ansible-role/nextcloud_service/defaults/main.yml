@@ -1,6 +1,20 @@
 ---
 nextcloud_service_auto_update: "registry"
 
+# Image tags
+nextcloud_app_image: "{{ nextcloud_image | default('ghcr.io/marpogaus/nextcloud:31') }}"
+nextcloud_db_image: "docker.io/library/postgres:15"
+nextcloud_redis_image: "docker.io/library/redis:7"
+nextcloud_nginx_image: "docker.io/library/nginx:1.25"
+nextcloud_promtail_image: "docker.io/grafana/promtail:3"
+
+# Container names for cross-references
+nextcloud_db_container: nextcloud-db
+nextcloud_redis_container: nextcloud-redis
+nextcloud_app_container: nextcloud-app
+nextcloud_web_container: nextcloud-web
+
+# Resource limits
 nextcloud_service_db_extra_args: "--memory=4G"
 nextcloud_service_redis_extra_args: ""
 nextcloud_service_app_extra_args: "--memory=6G --mount type=tmpfs,destination=/tmp:exec"
@@ -8,4 +22,8 @@ nextcloud_service_web_extra_args: ""
 nextcloud_service_cron_extra_args: "--memory=1G"
 nextcloud_service_push_extra_args: "--memory=512M"
 nextcloud_service_preview_extra_args: "--memory=2G --cpus=1"
+# Script configuration
+nextcloud_notify_push_arch: "x86_64"
+nextcloud_db_user: nextcloud
+
 nextcloud_service_loki_url: "http://10.0.2.2:3100"

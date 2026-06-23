@@ -15,8 +15,8 @@
     - bin
 
 - name: Deploy pre-snapshot pg_dumpall script
-  ansible.builtin.copy:
-    src: pre-snapshot-pg-dump.sh
+  ansible.builtin.template:
+    src: pre-snapshot-pg-dump.sh.j2
     dest: "{{ service_home }}/bin/pre-snapshot-pg-dump.sh"
     owner: "{{ service_user }}"
     mode: '0755'
@@ -52,24 +52,24 @@
   loop:
     - shared-network.network
     - nc.pod
-    - promtail-nc.container
     - promtail-nc.pod
 
 - name: Template container Quadlet files
   ansible.builtin.template:
-    src: "{{ service_repo }}/quadlets/nextcloud-{{ item }}.container.j2"
+    src: "{{ service_repo }}/quadlets/{{ item }}.container.j2"
     dest: "{{ service_home }}/.config/containers/systemd/nextcloud-{{ item }}.container"
     owner: "{{ service_user }}"
     group: "{{ service_user }}"
     mode: '0644'
   loop:
-    - db
-    - redis
-    - app
-    - web
-    - cron
-    - push
-    - preview-generator
+    - nextcloud-db
+    - nextcloud-redis
+    - nextcloud-app
+    - nextcloud-web
+    - nextcloud-cron
+    - nextcloud-push
+    - nextcloud-preview-generator
+    - promtail-nc
 
 - name: Ensure configs directory exists
   ansible.builtin.file:

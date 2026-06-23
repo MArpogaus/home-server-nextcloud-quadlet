@@ -1,5 +1,5 @@
 [Container]
-Image={{ (nextcloud_image | default('docker.io/library/nextcloud:31-fpm')) | lower }}
+Image={{ nextcloud_app_image }}
 ContainerName=nextcloud-cron
 PodmanArgs={{ nextcloud_service_cron_extra_args }}
 Volume=nc-app-html:/var/www/html:z

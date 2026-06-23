@@ -1,5 +1,5 @@
 [Container]
-Image=docker.io/grafana/promtail:3
+Image={{ nextcloud_promtail_image }}
 ContainerName=promtail-nc
 Volume=./configs/promtail-nc.yaml:/etc/promtail/promtail.yaml:ro
 Volume=/var/log/journal/:/var/log/journal/:ro
@@ -7,7 +7,7 @@ Volume=/run/log/journal/:/run/log/journal/:ro
 Volume=/etc/machine-id:/etc/machine-id:ro
 Volume=nc-app-logs:/var/log/nextcloud:ro
 Pod=promtail-nc.pod
-AutoUpdate=registry
+AutoUpdate={{ nextcloud_service_auto_update }}
 SecurityLabelDisable=true
 
 [Install]
