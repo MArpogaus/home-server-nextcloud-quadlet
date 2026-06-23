@@ -12,6 +12,7 @@
     - data/db_data
     - data/data
     - data/config
+    - data/custom_apps
     - bin
 
 - name: Deploy pre-snapshot pg_dumpall script
@@ -88,6 +89,8 @@
     mode: '0644'
   loop:
     - promtail-nc.yaml
+    - docker.conf
+    - upgrade.exclude
 
 - name: Template nginx config
   ansible.builtin.template:
@@ -105,9 +108,24 @@
     group: "{{ service_user }}"
     mode: '0600'
 
-- name: Fix bind-mount ownership to www-data (33) in podman user namespace
-  ansible.builtin.shell: |
-    machinectl shell {{ service_user }}@ /usr/bin/podman unshare chown -R 33:33 \
-      {{ service_home }}/data/data \
-      {{ service_home }}/data/config
-  changed_when: false
+- name: Mark bind-mount dirs as non-empty (skip per-directory rsync chown)
+  ansible.builtin.file:
+    path: "{{ service_home }}/{{ item }}/.skip-rsync-chown"
+    state: touch
+    owner: "{{ service_user }}"
+    mode: '0644'
+  loop:
+    - data/data
+    - data/config
+    - data/custom_apps
+
+- name: Set bind-mount dirs world-writable (kernel regression blocks subuid chown)
+  ansible.builtin.file:
+    path: "{{ service_home }}/{{ item }}"
+    state: directory
+    owner: "{{ service_user }}"
+    mode: '0777'
+  loop:
+    - data/data
+    - data/config
+    - data/custom_apps
