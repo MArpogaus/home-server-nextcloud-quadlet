@@ -14,15 +14,7 @@ jobs:
   build:
     strategy:
       matrix:
-        include:
-          - tag: 31
-            overwrite: ''
-          - tag: 32
-            overwrite: '32'
-          - tag: 33
-            overwrite: '33'
-          - tag: 34
-            overwrite: '34'
+        tag: [31, 32, 33, 34]
     permissions:
       contents: read
       actions: read
@@ -35,7 +27,7 @@ jobs:
       context: ./containers
       platform: linux/amd64
       free-disk-space: false
-      overwrite-ref-tag: ${{ matrix.overwrite }}
+      overwrite-ref-tag: ${{ matrix.tag }}
       build-args: |
         NEXTCLOUD_TAG=${{ matrix.tag }}
     secrets:
