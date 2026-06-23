@@ -79,7 +79,15 @@
     group: "{{ service_user }}"
     mode: '0755'
 
-- name: Deploy config files
+- name: Template promtail config
+  ansible.builtin.template:
+    src: "{{ service_repo }}/quadlets/configs/promtail-nc.yaml.j2"
+    dest: "{{ service_home }}/.config/containers/systemd/configs/promtail-nc.yaml"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0644'
+
+- name: Deploy static config files
   ansible.builtin.copy:
     src: "{{ service_repo }}/quadlets/configs/{{ item }}"
     dest: "{{ service_home }}/.config/containers/systemd/configs/{{ item }}"
@@ -87,7 +95,6 @@
     group: "{{ service_user }}"
     mode: '0644'
   loop:
-    - promtail-nc.yaml
     - docker.conf
 
 - name: Template nginx config
