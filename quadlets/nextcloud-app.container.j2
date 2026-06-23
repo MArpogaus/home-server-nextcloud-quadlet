@@ -10,6 +10,7 @@ Volume={{ service_home }}/data/data:/var/www/html/data:idmap,z
 Volume={{ service_home }}/data/config:/var/www/html/config:idmap,z
 Volume=./configs/docker.conf:/usr/local/etc/php-fpm.d/docker.conf:ro,z
 Pod=nc.pod
+Entrypoint=/entrypoint.sh
 AutoUpdate={{ nextcloud_service_auto_update }}
 
 [Unit]
