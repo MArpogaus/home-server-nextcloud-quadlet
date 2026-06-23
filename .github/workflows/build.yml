@@ -4,12 +4,25 @@ on:
   push:
     branches: [main, dev]
   pull_request:
+  schedule:
+    - cron: 0 7 * * *
   workflow_dispatch:
 
 permissions: {}
 
 jobs:
   build:
+    strategy:
+      matrix:
+        include:
+          - tag: 31
+            overwrite: ''
+          - tag: 32
+            overwrite: '32'
+          - tag: 33
+            overwrite: '33'
+          - tag: 34
+            overwrite: '34'
     permissions:
       contents: read
       actions: read
@@ -21,7 +34,9 @@ jobs:
       containerfile: ./containers/Containerfile
       context: ./containers
       platform: linux/amd64
+      free-disk-space: false
+      overwrite-ref-tag: ${{ matrix.overwrite }}
       build-args: |
-        NEXTCLOUD_TAG=31
+        NEXTCLOUD_TAG=${{ matrix.tag }}
     secrets:
       SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}

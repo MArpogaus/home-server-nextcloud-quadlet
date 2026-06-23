@@ -33,6 +33,10 @@ on:
         type: boolean
         required: false
         default: true
+      overwrite-ref-tag:
+        type: string
+        required: false
+        default: ''
     secrets:
       SIGNING_SECRET:
         required: true
@@ -53,7 +57,7 @@ jobs:
 
       - name: Build and Push Image
         id: build
-        uses: MArpogaus/image-builder-action@376511ec51c9d0d2418ecb5505eeb87f09353df6 # v1.4.0
+        uses: MArpogaus/image-builder-action@9ebc6fac49fc59f9dfdfe1b26e3923b049dfd619 # v1.5.0
         with:
           image-name: ${{ inputs.image-name }}
           containerfile: ${{ inputs.containerfile }}
@@ -63,6 +67,7 @@ jobs:
           cosign-public-key: ${{ inputs.cosign-public-key }}
           build-args: ${{ inputs.build-args }}
           free-disk-space: ${{ inputs.free-disk-space }}
+          overwrite-ref-tag: ${{ inputs.overwrite-ref-tag }}
           signing-secret: ${{ secrets.SIGNING_SECRET }}
 
   provenance:
