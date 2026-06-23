@@ -1,7 +1,7 @@
 [Unit]
-Description=Pre-snapshot pg_dumpall for Nextcloud
+Description=Pre-snapshot pg_dumpall for {{ service_user }}
 
 [Service]
 Type=oneshot
-ExecStart=machinectl shell nextcloud@ /var/services/nextcloud/bin/pre-snapshot-pg-dump.sh
+ExecStart=machinectl shell {{ service_user }}@ {{ service_home }}/bin/pre-snapshot-pg-dump.sh
 User=root
