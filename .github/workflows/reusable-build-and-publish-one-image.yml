@@ -57,7 +57,7 @@ jobs:
 
       - name: Build and Push Image
         id: build
-        uses: MArpogaus/image-builder-action@d7d88fae93411f854880f50474cec36936a74ef4 # v1.5.0
+        uses: MArpogaus/image-builder-action@3323c49a8e84aaced492ede1efef24dbee48ca48 # v1.5.1
         with:
           image-name: ${{ inputs.image-name }}
           containerfile: ${{ inputs.containerfile }}
